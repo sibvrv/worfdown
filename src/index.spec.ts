@@ -6,7 +6,12 @@ describe('wiki to html', function () {
   describe('basic', function () {
     it('paragraph markup', function () {
       const result = worfdown(`Basic paragraph test with <, >, & and "`);
-      expect(result).to.equal(`Basic paragraph test with &lt;, &gt;, &amp; and &quot;`);
+      expect(result).to.equal(`<p>Basic paragraph test with &lt;, &gt;, &amp; and &quot;</p>`);
+    });
+
+    it('multiline paragraph markup', function () {
+      const result = worfdown(`Basic paragraph test with <, >, & and "\n\nTest 123\n\nTest 321`);
+      expect(result).to.equal(`<p>Basic paragraph test with &lt;, &gt;, &amp; and &quot;</p><p>Test 123</p><p>Test 321</p>`);
     });
   });
 
@@ -60,17 +65,17 @@ describe('wiki to html', function () {
 
     it('Mdash', function () {
       const result = worfdown(`Some text -- Some more text`);
-      expect(result).to.equal(`Some text &mdash; Some more text`);
+      expect(result).to.equal(`<p>Some text &mdash; Some more text</p>`);
     });
 
     it('Mdash and strike #1', function () {
       const result = worfdown(`Some text -- Some more --strike text--`);
-      expect(result).to.equal(`Some text &mdash; Some more <strike>strike text</strike>`);
+      expect(result).to.equal(`<p>Some text &mdash; Some more <strike>strike text</strike></p>`);
     });
 
     it('Mdash and strike #2', function () {
       const result = worfdown(`Some text -- Some more -- strike text--`);
-      expect(result).to.equal(`Some text &mdash; Some more &mdash; strike text--`);
+      expect(result).to.equal(`<p>Some text &mdash; Some more &mdash; strike text--</p>`);
     });
 
     it('superscript', function () {

@@ -3,7 +3,7 @@ const tagsToReplace: { [key: string]: string } = {
   '<': '&lt;',
   '>': '&gt;',
   '"': '&quot;',
-  '\u2014': '&mdash;'
+  '\u2014': '&mdash;',
 };
 
 const replaceTag = (tag: string) => tagsToReplace[tag] || tag;
@@ -13,14 +13,14 @@ const parseListItems = (text: string) => {
   return text.replace(/(?:(?:^|\n)[*-].*)+/g, m => {
     let type = m.match(/(^|\n)-/) ? 'ol' : 'ul';
     // strip first layer of list
-    m = m.replace(/(^|\n)[*-][ ]?/g, "$1");
+    m = m.replace(/(^|\n)[*-][ ]?/g, '$1');
     m = parseListItems(m);
     return `<${type}><li>${m.replace(/^\n/, '').split(/\n/).join('</li><li>')}</li></${type}>`;
   });
 };
 
 const parseList = (text: string) => text.replace(/(?:^|\n)[\s]*(?:(\*(?!\*).*?)|(-(?!-).*?))(\n\n|$)/gs, list => parseListItems(
-  list.trim().replace(/(?:^|\n)[^*-]+/g, m => '<br/>' + m.trim().replace(/\n/g, '<br/>'))
+  list.trim().replace(/(?:^|\n)[^*-]+/g, m => '<br/>' + m.trim().replace(/\n/g, '<br/>')),
 ));
 
 /**
@@ -50,5 +50,7 @@ export const worfdown = (text: string) => {
     .replace(/\^\^([^*]+)\^\^/g, '<sup>$1</sup>')
 
     .replace(/\0\d+\0/, (m, id) => stack[+id])
+
+    .replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm, (m, l) => (l.match(/^\^+$/)) ? l : '<p>' + l + '</p>')
     ;
 };

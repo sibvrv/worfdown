@@ -1,11 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.worfdown = void 0;
 var tagsToReplace = {
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
     '"': '&quot;',
-    '\u2014': '&mdash;'
+    '\u2014': '&mdash;',
 };
 var replaceTag = function (tag) { return tagsToReplace[tag] || tag; };
 var htmlSpecialChars = function (text) { return text.replace(/[&<>"\u2014]/g, replaceTag); };
@@ -13,7 +14,7 @@ var parseListItems = function (text) {
     return text.replace(/(?:(?:^|\n)[*-].*)+/g, function (m) {
         var type = m.match(/(^|\n)-/) ? 'ol' : 'ul';
         // strip first layer of list
-        m = m.replace(/(^|\n)[*-][ ]?/g, "$1");
+        m = m.replace(/(^|\n)[*-][ ]?/g, '$1');
         m = parseListItems(m);
         return "<" + type + "><li>" + m.replace(/^\n/, '').split(/\n/).join('</li><li>') + "</li></" + type + ">";
     });
@@ -24,7 +25,7 @@ var parseList = function (text) { return text.replace(/(?:^|\n)[\s]*(?:(\*(?!\*)
  * @param {string} text
  * @returns {string}
  */
-exports.worfdown = function (text) {
+var worfdown = function (text) {
     var stack = [];
     var toStack = function (text) { return "\0" + (stack.push("<code>" + text + "</code>") - 1) + "\0"; };
     return parseList(htmlSpecialChars(text
@@ -41,5 +42,7 @@ exports.worfdown = function (text) {
         .replace(/__([^*]+)__/g, '<u>$1</u>')
         .replace(/,,([^*]+),,/g, '<sub>$1</sub>')
         .replace(/\^\^([^*]+)\^\^/g, '<sup>$1</sup>')
-        .replace(/\0\d+\0/, function (m, id) { return stack[+id]; });
+        .replace(/\0\d+\0/, function (m, id) { return stack[+id]; })
+        .replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm, function (m, l) { return (l.match(/^\^+$/)) ? l : '<p>' + l + '</p>'; });
 };
+exports.worfdown = worfdown;
