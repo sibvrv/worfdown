@@ -15,6 +15,23 @@ describe('wiki to html', function () {
     });
   });
 
+  describe('links', function () {
+    it('Simple link', function () {
+      const result = worfdown(`Basic paragraph test with <, >, & and "\n\nTest https://www.sibvrv.com/ 123\n\nTest 321`);
+      expect(result).to.equal(`<p>Basic paragraph test with &lt;, &gt;, &amp; and &quot;</p><p>Test<a href="https://www.sibvrv.com/">https://www.sibvrv.com/</a> 123</p><p>Test 321</p>`);
+    });
+
+    it('External link', function () {
+      const result = worfdown(`Basic paragraph test with <, >, & and "\n\nTest [https://www.sibvrv.com/] 123\n\nTest 321`);
+      expect(result).to.equal(`<p>Basic paragraph test with &lt;, &gt;, &amp; and &quot;</p><p>Test <a href="https://www.sibvrv.com/">https://www.sibvrv.com/</a> 123</p><p>Test 321</p>`);
+    });
+
+    it('Internal link', function () {
+      const result = worfdown(`Basic paragraph test with <, >, & and "\n\nTest [[https://www.sibvrv.com/|SibVRV Software]] 123\n\nTest 321`);
+      expect(result).to.equal(`<p>Basic paragraph test with &lt;, &gt;, &amp; and &quot;</p><p>Test <a href="https://www.sibvrv.com/">SibVRV Software</a> 123</p><p>Test 321</p>`);
+    });
+  });
+
   describe('titles', function () {
     it('H1', function () {
       const result = worfdown(`# Facts`);

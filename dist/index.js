@@ -23,9 +23,11 @@ var parseList = function (text) { return text.replace(/(?:^|\n)[\s]*(?:(\*(?!\*)
 /**
  * WorfDown to HTML
  * @param {string} text
+ * @param options
  * @returns {string}
  */
-var worfdown = function (text) {
+var worfdown = function (text, options) {
+    if (options === void 0) { options = {}; }
     var stack = [];
     var toStack = function (text) { return "\0" + (stack.push("<code>" + text + "</code>") - 1) + "\0"; };
     return parseList(htmlSpecialChars(text
@@ -43,6 +45,17 @@ var worfdown = function (text) {
         .replace(/,,([^*]+),,/g, '<sub>$1</sub>')
         .replace(/\^\^([^*]+)\^\^/g, '<sup>$1</sup>')
         .replace(/\0\d+\0/, function (m, id) { return stack[+id]; })
-        .replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm, function (m, l) { return (l.match(/^\^+$/)) ? l : '<p>' + l + '</p>'; });
+        .replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm, function (m, l) { return (l.match(/^\^+$/)) ? l : '<p>' + l + '</p>'; })
+        .replace(/[^\[](http[^\[\s]*)/g, function (m, l) { return '<a href="' + l + '">' + l + '</a>'; })
+        .replace(/\[\[(.*?)\]\]/g, function (m, l) {
+        var p = l.split(/\|/);
+        var link = p.shift();
+        return link.match(/^Image:(.*)/) ? (options.onImage ? options.onImage(m) : m) : '<a href="' + link + '">' + (p.length ? p.join('|') : link) + '</a>';
+    })
+        .replace(/[\[](http.*)[!\]]/g, function (m, l) {
+        var p = l.replace(/[\[\]]/g, '').split(/ /);
+        var link = p.shift();
+        return ('<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>');
+    });
 };
 exports.worfdown = worfdown;

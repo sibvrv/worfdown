@@ -26,9 +26,12 @@ const parseList = (text: string) => text.replace(/(?:^|\n)[\s]*(?:(\*(?!\*).*?)|
 /**
  * WorfDown to HTML
  * @param {string} text
+ * @param options
  * @returns {string}
  */
-export const worfdown = (text: string) => {
+export const worfdown = (text: string, options: Partial<{
+  onImage: (link: string) => string;
+}> = {}) => {
   const stack: string[] = [];
   const toStack = (text: string) => `\0${stack.push(`<code>${text}</code>`) - 1}\0`;
 
@@ -52,5 +55,20 @@ export const worfdown = (text: string) => {
     .replace(/\0\d+\0/, (m, id) => stack[+id])
 
     .replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm, (m, l) => (l.match(/^\^+$/)) ? l : '<p>' + l + '</p>')
+
+    .replace(/[^\[](http[^\[\s]*)/g, (m, l) => '<a href="' + l + '">' + l + '</a>')
+    .replace(/\[\[(.*?)\]\]/g, function (m, l) {
+      const p = l.split(/\|/);
+      const link = p.shift();
+
+      return link.match(/^Image:(.*)/) ? (options.onImage ? options.onImage(m) : m) : '<a href="' + link + '">' + (p.length ? p.join('|') : link) + '</a>';
+    })
+    .replace(/[\[](http.*)[!\]]/g, function (m, l) {
+      const p = l.replace(/[\[\]]/g, '').split(/ /);
+      const link = p.shift();
+      return (
+        '<a href="' + link + '">' + (p.length ? p.join(' ') : link) + '</a>'
+      );
+    })
     ;
 };
